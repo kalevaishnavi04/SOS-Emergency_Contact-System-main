@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Home · SOS Safety{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="sos-wrap">
+        <button id="sosBtn" class="sos-button" onclick="sendSOS()">SOS</button>
+        <p class="sos-hint">Tap and hold your nerve — this sends your live location<br>to every contact below via WhatsApp.</p>
+    </div>
+
+    <div class="section-title">Emergency Contacts</div>
+    <ul class="contact-list">
+        {% for c in contacts %}
+            <li>
+                <span><b>{{ c.name }}</b> · {{ c.phone }}</span>
+                <span style="display:flex; align-items:center; gap:8px;">
+                    {% if c.place %}<span class="place-tag">{{ c.place }}</span>{% endif %}
+                    <a href="{% url 'delete_contact' c.id %}"
+                       onclick="return confirm('Remove {{ c.name }} from emergency contacts?');"
+                       style="color:var(--alert-dark); font-size:12px; text-decoration:none; font-weight:600;">Delete</a>
+                </span>
+            </li>
+        {% empty %}
+            <li>No contacts yet — add one to get started.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'add_contact' %}" class="btn btn-secondary" style="margin-top:18px;">+ Add Contact</a>
+</div>
+
+<script>
+function sendSOS() {
+    const btn = document.getElementById('sosBtn');
+    if (!navigator.geolocation) {
+        alert("Your browser doesn't support location sharing.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "SENDING...";
+
+    navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        fetch(`/sos/?lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status && data.status.toLowerCase().includes("error")) {
+                    alert("⚠️ " + data.message);
+                } else {
+                    let msg = "🚨 SOS sent to: " + (data.sent_to.join(", ") || "no one");
+                    if (data.failed && data.failed.length > 0) {
+                        msg += "\n\n❌ Failed:\n" + data.failed.map(f => `${f.name}: ${f.error}`).join("\n");
+                    }
+                    alert(msg);
+                }
+                btn.disabled = false;
+                btn.textContent = "SOS";
+            })
+            .catch(() => {
+                alert("Something went wrong sending the alert. Please try again.");
+                btn.disabled = false;
+                btn.textContent = "SOS";
+            });
+    }, function () {
+        alert("Location permission denied. Please allow location access to send SOS.");
+        btn.disabled = false;
+        btn.textContent = "SOS";
+    });
+}
+</script>
+{% endblock %}

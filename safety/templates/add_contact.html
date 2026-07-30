@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Add Contact · SOS Safety{% endblock %}
+{% block content %}
+<div class="card">
+    <h1 class="title">Add Emergency Contact</h1>
+    <p class="subtitle">They'll get a WhatsApp alert with your live location during an SOS.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Mom" required>
+
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" placeholder="9699838713 or +919699838713" required>
+
+        <label for="place">Relation / Place (optional)</label>
+        <input type="text" id="place" name="place" placeholder="Home / Office / Mom">
+
+        <button type="submit" class="btn">Save Contact</button>
+    </form>
+
+    <div class="section-title">Saved Contacts</div>
+    <ul class="contact-list">
+        {% for c in contacts %}
+            <li>
+                <span><b>{{ c.name }}</b> · {{ c.phone }}</span>
+                <span style="display:flex; align-items:center; gap:8px;">
+                    {% if c.place %}<span class="place-tag">{{ c.place }}</span>{% endif %}
+                    <a href="{% url 'delete_contact' c.id %}"
+                       onclick="return confirm('Remove {{ c.name }} from emergency contacts?');"
+                       style="color:var(--alert-dark); font-size:12px; text-decoration:none; font-weight:600;">Delete</a>
+                </span>
+            </li>
+        {% empty %}
+            <li>No contacts found</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'home' %}" class="btn btn-secondary" style="margin-top:18px;">← Back to Home</a>
+</div>
+{% endblock %}

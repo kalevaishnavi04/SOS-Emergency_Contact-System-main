@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Login · SOS Safety{% endblock %}
+{% block content %}
+<div class="card">
+    <h1 class="title">Welcome back</h1>
+    <p class="subtitle">Log in to reach your emergency contacts instantly.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+        <button type="submit" class="btn">Log In</button>
+    </form>
+
+    <p class="link-row">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+</div>
+{% endblock %}
